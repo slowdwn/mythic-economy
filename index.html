@@ -740,26 +740,33 @@ document.getElementById('jarLoader').onchange = async (e) => {
             div.innerHTML = `<img src="${img}"><span title="${itemName}">${itemName}</span>`;
             
             // ВОТ ТУТ ОБНОВЛЕННЫЙ КЛИК
-            div.onclick = function() {
-                // Эффект подмигивания
-                this.classList.remove('added-flash');
-                void this.offsetWidth; 
-                this.classList.add('added-flash');
+            // Внутри цикла перебора текстур (jarLoader.onchange)
+div.onclick = function() {
+    // 1. Анимация нажатия
+    this.classList.remove('added-flash');
+    void this.offsetWidth; 
+    this.classList.add('added-flash');
 
-                // Логика добавления с учетом фильтров
-                const selMod = document.getElementById('filterMod').value;
-                const selCat = document.getElementById('filterCat').value;
+    // 2. Логика выбора мода и категории
+    const selMod = document.getElementById('filterMod').value;
+    const selCat = document.getElementById('filterCat').value;
 
-                db.servers[curSrvIdx].items.push({ 
-                    name: itemName, 
-                    img: img, 
-                    mod: (selMod === 'all' ? mName : selMod), 
-                    cat: (selCat === 'all' ? "Блоки" : selCat), 
-                    price: parseFloat(document.getElementById('default-price')?.value || 0)
-                });
+    // 3. Добавление в локальную базу (db)
+    // Убедись, что curSrvIdx определен (обычно 0)
+    if (!db.servers[curSrvIdx].items) db.servers[curSrvIdx].items = [];
 
-                render();
-            };
+    db.servers[curSrvIdx].items.push({ 
+        name: itemName, 
+        img: img, 
+        mod: (selMod === 'all' ? mName : selMod), 
+        cat: (selCat === 'all' ? "Предметы" : selCat), 
+        price: 0 
+    });
+
+    // 4. ГЛАВНОЕ: Перерисовываем витрину, чтобы предмет СРАЗУ появился
+    render();
+    console.log("Предмет добавлен: " + itemName);
+};
             w.appendChild(div); 
             total++;
         }
@@ -772,5 +779,6 @@ document.getElementById('jarLoader').onchange = async (e) => {
 </script>
 </body>
 </html>
+
 
 
