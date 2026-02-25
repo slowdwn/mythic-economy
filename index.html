@@ -397,6 +397,7 @@ input#search:focus {
             <div><label style="font-size:10px">Мод</label><select id="ed-mod"></select></div>
             <div><label style="font-size:10px">Категория</label><select id="ed-cat"></select></div>
         </div>
+        <button onclick="downloadBackup()" class="yellow">📥 Бэкап в файл</button>
         <button onclick="confirmEdit()">СОХРАНИТЬ</button>
         <button onclick="closeModals()" style="background:transparent; color:var(--text-muted)">ЗАКРЫТЬ</button>
     </div>
@@ -834,7 +835,30 @@ function delCat() {
     }
 }
 
+    function downloadBackup() {
+    // Создаем копию базы без паролей и лишних полей
+    const backupData = JSON.stringify(db, null, 4);
+    
+    // Создаем "виртуальный" файл
+    const blob = new Blob([backupData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Создаем временную ссылку для скачивания
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mystic_backup_${new Date().toLocaleDateString()}.json`;
+    
+    // Симулируем клик и удаляем ссылку
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert("Файл бэкапа успешно создан и скачан!");
+}
+    
 </script>
 </body>
 </html>
+
 
