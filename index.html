@@ -433,23 +433,22 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 // 2. Глобальные переменные
+// 2. Глобальные переменные
 let db = { servers: [{name: "Загрузка...", items: []}], mods: [], cats: [] };
 let cart = [];
 let curSrvIdx = 0;
 let isAdmin = false;
-let adminToken = ""; 
+let adminToken = ""; // ОБЪЯВЛЯЕМ ТОЛЬКО ОДИН РАЗ
 let editingIdx = null;
 
-// 3. Функция инициализации (слушает клавишу L)
+// 3. Функция инициализации
 function init() {
     console.log("Economy Hub Initialized.");
     
-    // Сразу загружаем данные из Firebase
     database.ref('shopData').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             db = data;
-            // Проверяем наличие серверов, чтобы не было ошибок
             if(!db.servers) db.servers = [{name: "Mystic 1.20.1", items: []}];
             if(!db.mods) db.mods = [];
             if(!db.cats) db.cats = [];
@@ -460,7 +459,9 @@ function init() {
     });
 
     document.addEventListener('keydown', (e) => {
+        // Проверяем, не пишет ли пользователь в поиске или инпуте
         if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+        
         if (e.key.toLowerCase() === 'l' || e.key.toLowerCase() === 'д') { 
             toggleAdmin(); 
         }
@@ -471,7 +472,6 @@ function init() {
 async function toggleAdmin() {
     if (!isAdmin) {
         const pass = prompt("Введите пароль администратора:");
-        // Здесь можно добавить проверку: if (pass !== 'твой_пароль') return alert('Стоп!');
         if (!pass) return;
 
         adminToken = pass; 
@@ -491,6 +491,25 @@ async function toggleAdmin() {
     }
 }
 
+// 5. Сохранение в Firebase
+async function saveGlobal() {
+    if (!isAdmin) return alert("Вы не в режиме админа!");
+
+    // Создаем копию данных для отправки, чтобы правила Firebase могли проверить пароль
+    const dataToSend = {
+        ...db,
+        auth_pass: adminToken
+    };
+
+    database.ref('shopData').set(dataToSend)
+        .then(() => alert("✅ Данные успешно синхронизированы с облаком!"))
+        .catch(err => {
+            console.error(err);
+            alert("❌ Ошибка доступа! Проверьте пароль или правила Rules в Firebase.");
+        });
+}
+
+// ОСТАЛЬНЫЕ ФУНКЦИИ (render, addToCart и т.д. остаются ниже)
 // ... (далее идут твои функции render, saveGlobal и т.д.)
 
 // В САМОМ КОНЦЕ СКРИПТА ОБЯЗАТЕЛЬНО ВЫЗОВИ:
@@ -779,6 +798,7 @@ div.onclick = function() {
 </script>
 </body>
 </html>
+
 
 
 
