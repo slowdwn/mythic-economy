@@ -497,11 +497,26 @@ async function toggleAdmin() {
 init();
 // 5. СОХРАНЕНИЕ В GOOGLE (Вместо старого fetch)
 async function saveGlobal() {
-    // В Firebase мы не можем легко проверить пароль через fetch, 
-    // поэтому просто пробуем записать. Если в Rules настроен пароль — сработает или нет.
+    if (!isAdmin || !adminToken) {
+        alert("❌ Вы не авторизованы как админ!");
+        return;
+    }
+
+    // Мы используем встроенный метод Firebase SDK
+    // Если в Rules настроена проверка, то без верного adminToken запись не пройдет
     database.ref('shopData').set(db)
-        .then(() => alert("✅ Успешно сохранено в Google Firebase!"))
-        .catch(err => alert("❌ Ошибка доступа! Проверьте пароль или правила Rules в консоли Firebase."));
+        .then(() => {
+            alert("✅ Успешно сохранено в облаке Firebase!");
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Ошибка доступа! Скорее всего, пароль неверный или правила Rules настроены не на тот ключ.");
+            // Если ошибка доступа, сбрасываем админку
+            isAdmin = false;
+            adminToken = "";
+            document.body.classList.remove('admin-mode');
+            render();
+        });
 }
 
 // ... ОСТАЛЬНЫЕ ТВОИ ФУНКЦИИ (render, addToCart, openEdit и т.д.) БЕЗ ИЗМЕНЕНИЙ ...
@@ -764,3 +779,4 @@ document.getElementById('jarLoader').onchange = async (e) => {
 </script>
 </body>
 </html>
+
